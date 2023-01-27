@@ -28,7 +28,7 @@ async function run() {
       break;
     case "send":
       var amount = +process.argv[3];
-      let { _, scndProofs } = await wallet.splitToSend(
+      var { _, scndProofs } = await wallet.splitToSend(
         wallet.proofs,
         amount,
         (invalidate = true)
@@ -37,9 +37,13 @@ async function run() {
       console.log(wallet.serializeProofs(scndProofs));
       break;
     case "receive":
-      let tokenBase64 = process.argv[3];
-      let proofs = JSON.parse(atob(tokenBase64));
+      var tokenBase64 = process.argv[3];
+      var proofs = JSON.parse(atob(tokenBase64));
       await wallet.redeem(proofs);
+      break;
+    case "pay":
+      var invoice = process.argv[3];
+      await wallet.melt(invoice);
       break;
     case "balance":
       break;

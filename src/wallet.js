@@ -3,6 +3,7 @@ const { utils, Point } = require("@noble/secp256k1");
 const dhke = require("./dhke");
 const { splitAmount, bytesToNumber, bigIntStringify } = require("./utils");
 const { uint8ToBase64 } = require("./base64");
+const bolt11 = require("bolt11");
 
 // local storage for node
 if (typeof localStorage === "undefined" || localStorage === null) {
@@ -212,6 +213,53 @@ class Wallet {
     try {
       const amount = proofs.reduce((s, t) => (s += t.amount), 0);
       await this.split(proofs, amount);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  // --------- POST /melt
+
+  async melt(invoice) {
+    try {
+      const amount_invoice = bolt11.decode(invoice).millisatoshis / 1000;
+      const amount = amount_invoice + (await this.checkFees(invoice));
+
+      let { _, scndProofs } = await this.splitToSend(this.proofs, amount);
+      const postMeltRequest = {
+        proofs: scndProofs.flat(),
+        amount: amount,
+        invoice: invoice,
+      };
+
+      const postMeltResponse = await axios.post(
+        `${MINT_SERVER}/melt`,
+        postMeltRequest
+      );
+      this.assertMintError(postMeltResponse);
+      if (postMeltResponse.data.paid) {
+        this.deleteProofs(scndProofs);
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  // --------- GET /checkfees
+
+  async checkFees(invoice) {
+    const getCheckFeesRequest = {
+      pr: invoice,
+    };
+    try {
+      const checkFeesResponse = await axios.post(
+        `${MINT_SERVER}/checkfees`,
+        getCheckFeesRequest
+      );
+      this.assertMintError(checkFeesResponse);
+      return checkFeesResponse.data.fee;
     } catch (error) {
       console.error(error);
       throw error;

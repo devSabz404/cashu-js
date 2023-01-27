@@ -11,6 +11,9 @@ Cashu is an Ecash implementation based on David Wagner's variant of Chaumian bli
 - [x] Send tokens
 - [x] Receive tokens
 - [ ] Melt tokens
+- [ ] Check spendable
+- [ ] Check fees
+- [ ] Keysets
 - [x] Local storage
 - [x] Serialize tokens V1
 - [ ] Serialize tokens V2
