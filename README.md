@@ -21,7 +21,7 @@ Cashu is an Ecash implementation based on David Wagner's variant of Chaumian bli
 
 ### Running and testing the client
 
-Tou need a Cashu mint for testing. If you don't already have one, follow the instructions below to set one up. Then we will run the JS code in this repo.
+You need a Cashu mint for testing. If you don't already have one, follow the instructions below to set one up. Then we will run the JS code in this repo.
 
 ##### Set up a mint
 Install the [Cashu Python mint](https://github.com/cashubtc/cashu) and run the server on `localhost:3338`. Don't be afraid. This is a quick an easy process if you follow the instructions carefully.
