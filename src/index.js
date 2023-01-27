@@ -12,7 +12,7 @@ async function run() {
   const command = process.argv[2];
   switch (command) {
     case "mint":
-      const amount = +process.argv[3];
+      var amount = +process.argv[3];
       var resp;
       if (process.argv.length == 5) {
         const hash = process.argv[4];
@@ -20,7 +20,15 @@ async function run() {
       } else {
         resp = await wallet.requestMint(amount);
       }
+      console.log("Mint response:");
       console.log(resp);
+      break;
+    case "send":
+      var amount = +process.argv[3];
+      var resp;
+      let { _, scndProofs } = await wallet.splitToSend(wallet.proofs, amount);
+      console.log("Send result:");
+      console.log(scndProofs);
       break;
     default:
       console.log(`Command '${command}' not supported`);

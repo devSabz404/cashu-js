@@ -4,7 +4,17 @@ const dhke = require("./dhke");
 const { splitAmount, bytesToNumber, bigIntStringify } = require("./utils");
 const { uint8ToBase64 } = require("./base64");
 
+// local storage for node
+if (typeof localStorage === "undefined" || localStorage === null) {
+  var LocalStorage = require("node-localstorage").LocalStorage;
+  localStorage = new LocalStorage("./scratch");
+}
+
 class Wallet {
+  constructor() {
+    this.proofs = JSON.parse(localStorage.getItem("proofs") || "[]");
+  }
+
   // --------- GET /keys
 
   async loadMint() {
@@ -44,6 +54,8 @@ class Wallet {
     try {
       const amounts = splitAmount(amount);
       const proofs = await this.mintApi(amounts, hash);
+      this.proofs = this.proofs.concat(proofs);
+      this.storeProofs();
       return proofs;
     } catch (error) {
       console.log("Failed to execute 'mint' command");
@@ -70,6 +82,113 @@ class Wallet {
     } catch (error) {
       console.log("Failed to execute 'mint' command");
       console.error(error);
+    }
+  }
+
+  // --------- POST /split
+
+  async splitApi(proofs, amount) {
+    try {
+      const total = this.sumProofs(proofs);
+      const frst_amount = total - amount;
+      const scnd_amount = amount;
+      const frst_amounts = splitAmount(frst_amount);
+      const scnd_amounts = splitAmount(scnd_amount);
+      const amounts = [...frst_amounts];
+      amounts.push(...scnd_amounts);
+      let secrets = await this.generateSecrets(amounts);
+      if (secrets.length != amounts.length) {
+        throw new Error("number of secrets does not match number of outputs.");
+      }
+      let { outputs, rs } = await this.constructOutputs(amounts, secrets);
+      const postSplitRequest = {
+        amount: amount,
+        proofs: proofs,
+        outputs: outputs,
+      };
+
+      const postSplitResponse = await axios.post(
+        `${MINT_SERVER}/split`,
+        postSplitRequest
+      );
+      this.assertMintError(postSplitResponse);
+      const frst_rs = rs.slice(0, frst_amounts.length);
+      const frst_secrets = secrets.slice(0, frst_amounts.length);
+      const scnd_rs = rs.slice(frst_amounts.length);
+      const scnd_secrets = secrets.slice(frst_amounts.length);
+      const fristProofs = this.constructProofs(
+        postSplitResponse.data.fst,
+        frst_secrets,
+        frst_rs
+      );
+      const scndProofs = this.constructProofs(
+        postSplitResponse.data.snd,
+        scnd_secrets,
+        scnd_rs
+      );
+
+      return { fristProofs, scndProofs };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async split(proofs, amount) {
+    /*
+        supplies proofs and requests a split from the mint of these
+        proofs at a specific amount
+        */
+    try {
+      if (proofs.length == 0) {
+        throw new Error("no proofs provided.");
+      }
+      let { fristProofs, scndProofs } = await this.splitApi(proofs, amount);
+      this.deleteProofs(proofs);
+      // add new fristProofs, scndProofs to this.proofs
+      this.proofs = this.proofs.concat(fristProofs).concat(scndProofs);
+      this.storeProofs();
+      return { fristProofs, scndProofs };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async splitToSend(proofs, amount, invlalidate = false) {
+    /*
+        splits proofs so the user can keep firstProofs, send scndProofs.
+        then sets scndProofs as reserved.
+
+        if invalidate, scndProofs (the one to send) are invalidated
+        */
+    try {
+      const spendableProofs = proofs.filter((p) => !p.reserved);
+      if (this.sumProofs(spendableProofs) < amount) {
+        throw Error("balance too low.");
+      }
+
+      // call /split
+      let { fristProofs, scndProofs } = await this.split(
+        spendableProofs,
+        amount
+      );
+      // set scndProofs in this.proofs as reserved
+      const usedSecrets = proofs.map((p) => p.secret);
+      for (let i = 0; i < this.proofs.length; i++) {
+        if (usedSecrets.includes(this.proofs[i].secret)) {
+          this.proofs[i].reserved = true;
+        }
+      }
+      if (invlalidate) {
+        // delete scndProofs from db
+        this.deleteProofs(scndProofs);
+      }
+
+      return { fristProofs, scndProofs };
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   }
 
@@ -130,6 +249,13 @@ class Wallet {
 
   sumProofs(proofs) {
     return proofs.reduce((s, t) => (s += t.amount), 0);
+  }
+
+  storeProofs() {
+    localStorage.setItem(
+      "proofs",
+      JSON.stringify(this.proofs, bigIntStringify)
+    );
   }
 
   deleteProofs(proofs) {
