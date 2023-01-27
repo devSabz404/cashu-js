@@ -7,9 +7,10 @@ Cashu is an Ecash implementation based on David Wagner's variant of Chaumian bli
 ### Progress
 - [x] Request mint
 - [x] Mint tokens
-- [ ] Split tokens
+- [x] Split tokens
+- [x] Split to send
 - [ ] Melt tokens
-- [ ] Local storage
+- [x] Local storage
 - [ ] Serialize tokens
 - [ ] Redeem tokens
 
