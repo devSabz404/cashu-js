@@ -10,9 +10,9 @@ Cashu is an Ecash implementation based on David Wagner's variant of Chaumian bli
 - [x] Split tokens
 - [x] Send tokens
 - [x] Receive tokens
-- [ ] Melt tokens
+- [x] Melt tokens
 - [ ] Check spendable
-- [ ] Check fees
+- [x] Check fees
 - [ ] Keysets
 - [x] Local storage
 - [x] Serialize tokens V1
@@ -47,17 +47,29 @@ npm install
 ##### Run tests
 ...
 
-##### Mint tokens
+##### Mint tokens and receive Lightnign invoices
 
 ```sh
-node src/index.js mint 420 no_hash
+node src/index.js mint 420 <invoice_hash>
 ```
-(we use `no_hash` here because we disabled Lightning and we don't need to pay for ecash)
+Note: If you've set `LIGHTNING=FALSE` in the mint, you can use any `invoice_hash` you want here.
+
+##### Melt tokens and pay Lightnign invoices
+
+```sh
+node src/index.js pay <invoice>
+```
 
 ##### Send tokens
 
 ```sh
 node src/index.js send 69
+```
+
+##### Receive tokens
+
+```sh
+node src/index.js receive W3siaWQiOiJEU0FsOW52dnlm...
 ```
 
 ##### Receive tokens
