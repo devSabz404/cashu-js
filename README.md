@@ -11,7 +11,7 @@ If you don't already have one, first, you need to set up a mint. Then we will ru
 Install the [Cashu Python mint](https://github.com/cashubtc/cashu) and run the server on `localhost:3338`. Don't be afraid. This is a quick an easy process if you follow the instructions carefully.
 
 
-After the installation, this is one command: 
+Run the mint: 
 
 ```sh
 LIGHTNING=FALSE poetry run mint
