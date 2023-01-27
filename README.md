@@ -3,6 +3,16 @@
 `cashu-js` is an npm package for building Cashu ecash wallets.
 
 Cashu is an Ecash implementation based on David Wagner's variant of Chaumian blinding. Token logic based on [minicash](https://github.com/phyro/minicash) ([description](https://gist.github.com/phyro/935badc682057f418842c72961cf096c)) which implements a [Blind Diffie-Hellman Key Exchange](https://cypherpunks.venona.com/date/1996/03/msg01848.html) scheme written down by Ruben Somsen [here](https://gist.github.com/RubenSomsen/be7a4760dd4596d06963d67baf140406).
+
+### Progress
+- [x] Request mint
+- [x] Mint tokens
+- [ ] Split tokens
+- [ ] Melt tokens
+- [ ] Local storage
+- [ ] Serialize tokens
+- [ ] Redeem tokens
+
 ### How to
 
 If you don't already have one, first, you need to set up a mint. Then we will run the JS code in this repo.
