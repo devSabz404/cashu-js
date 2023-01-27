@@ -43,4 +43,14 @@ npm install
 ...
 
 ##### Mint tokens
-- Mint some coins: `node src/index.js mint 10 no_hash` (we use `no_hash` here because we disabled Lightning and we don't need to pay for ecash)
+
+```sh
+node src/index.js mint 420 no_hash
+```
+(we use `no_hash` here because we disabled Lightning and we don't need to pay for ecash)
+
+##### Send tokens
+
+```sh
+node src/index.js send 69
+```
