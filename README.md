@@ -56,3 +56,9 @@ node src/index.js mint 420 no_hash
 ```sh
 node src/index.js send 69
 ```
+
+##### Receive tokens
+
+```sh
+node src/index.js receive W3siaWQiOiJEU0FsOW52dnlm...
+```
