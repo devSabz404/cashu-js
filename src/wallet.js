@@ -18,6 +18,7 @@ class Wallet {
   // --------- GET /keys
 
   async loadMint() {
+    /* Gets public keys of the mint */
     this.keys = await this.getKeysApi();
   }
 
@@ -27,6 +28,16 @@ class Wallet {
   }
 
   // --------- POST /mint
+
+  /* 
+  
+  Mint new tokens by providing a payment hash corresponding to a paid Lightning invoice. 
+
+  The wallet provides an array of `outputs` (aka blinded secrets) which are to be signed by the mint.
+  The mint then responds with these `promises` (aka blinded signatures). 
+  The wallet then unblinds these and stores them as `proofs`, which are the tuple (secret, signature). 
+  
+  */
 
   async mintApi(amounts, paymentHash = "") {
     let secrets = await this.generateSecrets(amounts);
@@ -64,6 +75,8 @@ class Wallet {
   }
 
   // --------- GET /mint
+
+  /* Request to mint new tokens of a given amount. Mint will return a Lightning invoice that the user has to pay. */
 
   async requestMintApi(amount) {
     const getMintResponse = await axios.get(`${MINT_SERVER}/mint`, {
@@ -192,6 +205,19 @@ class Wallet {
     }
   }
 
+  async redeem(proofs) {
+    /*
+    Uses the /split endpoint to receive new tokens.
+    */
+    try {
+      const amount = proofs.reduce((s, t) => (s += t.amount), 0);
+      await this.split(proofs, amount);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   // --------- crypto
 
   generateSecrets(amounts) {
@@ -251,6 +277,12 @@ class Wallet {
     return proofs.reduce((s, t) => (s += t.amount), 0);
   }
 
+  serializeProofs(proofs) {
+    return btoa(JSON.stringify(proofs));
+  }
+
+  // local storage
+
   storeProofs() {
     localStorage.setItem(
       "proofs",
@@ -265,6 +297,8 @@ class Wallet {
     this.storeProofs();
     return this.proofs;
   }
+
+  // error checking from mint
 
   assertMintError(resp) {
     if (resp.data.hasOwnProperty("error")) {
