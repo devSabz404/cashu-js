@@ -44,9 +44,6 @@ git clone https://github.com/cashubtc/cashu-js-wallet.git
 npm install
 ```
 
-##### Run tests
-...
-
 ##### Mint tokens and receive Lightnign invoices
 
 ```sh
@@ -77,3 +74,6 @@ node src/index.js receive W3siaWQiOiJEU0FsOW52dnlm...
 ```sh
 node src/index.js receive W3siaWQiOiJEU0FsOW52dnlm...
 ```
+
+##### Run tests
+...
